@@ -113,3 +113,10 @@ async def chunk_lesson(
 
     background_tasks.add_task(process_lesson, data)
     return {"message": "Chunking request accepted and processing in background."}
+
+@app.get("/")
+async def root():
+    """
+    Simple health check endpoint.
+    """
+    return {"message": "Welcome to the Chunking API. Use POST /chunk to process lessons."}
