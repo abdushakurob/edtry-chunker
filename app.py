@@ -90,7 +90,7 @@ async def process_lesson(data: LessonInput):
         "type": data.type,
         "chunks": chunks,
     }
-
+    print(payload)
     try:
         await send_to_laravel_with_retry(payload)
         logger.info(f"Successfully processed and sent lesson {data.lesson_id}")
