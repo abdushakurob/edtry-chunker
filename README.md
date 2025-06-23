@@ -3,6 +3,92 @@
 ## Overview
 Chunker is a FastAPI service that processes educational lesson content by breaking it into optimized semantic chunks for more effective processing and retrieval. The service employs a recursive chunking strategy to intelligently split text while preserving semantic meaning and contextual relationships.
 
+## Installation
+
+### Prerequisites
+- Python 3.10+
+- pip package manager
+
+### Setup
+1. Clone the repository
+```bash
+git clone https://github.com/abdushakurob/edtry-chunker chunker
+cd chunker
+```
+
+2. Install required dependencies
+```bash
+pip install -r requirements.txt
+```
+
+3. Create a `.env` file in the root directory with the following variables:
+```
+EDTRY_INTERNAL_API_KEY=your_api_key_here
+LARAVEL_API_URL=your_laravel_endpoint_here
+```
+
+## Usage
+
+### Starting the Service
+Run the FastAPI server using uvicorn:
+```bash
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### Authentication
+This service requires API key authentication for all requests. The API key must be included in the `X-Internal-API-Key` header.
+
+**Important:** The API key value must match the `EDTRY_INTERNAL_API_KEY` value set in your `.env` file. All requests without a valid API key will be rejected with a 401 Unauthorized response.
+
+```python
+# API key verification in the application
+async def verify_api_key(x_internal_api_key: str = Header(...)):
+    if x_internal_api_key != API_KEY:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+```
+
+### API Endpoint
+Send a POST request to the `/chunk` endpoint with your lesson content:
+
+```bash
+curl -X POST http://localhost:8000/chunk \
+  -H "Content-Type: application/json" \
+  -H "X-Internal-API-Key: your_api_key_here" \
+  -d '{
+    "course_id": 123,
+    "lesson_id": 456,
+    "lesson_title": "Introduction to Machine Learning",
+    "lesson_content": "Machine learning is a branch of artificial intelligence...",
+    "type": "created"
+  }'
+```
+
+### Request Format
+
+**Headers**:
+```
+Content-Type: application/json
+X-Internal-API-Key: your_api_key_here  # Must match EDTRY_INTERNAL_API_KEY in .env
+```
+
+**Body**:
+```json
+{
+  "course_id": 123,
+  "lesson_id": 456,
+  "lesson_title": "Example Lesson Title",
+  "lesson_content": "Your lesson content to be chunked...",
+  "type": "created"  // Options: "created", "updated", "deleted"
+}
+```
+
+### Response
+```json
+{
+  "message": "Chunking request accepted and processing in background."
+}
+```
+
 ## How Chunking Works
 
 ### Recursive Chunking Strategy
@@ -96,3 +182,33 @@ The chunking algorithm includes special handling for:
 - **Asynchronous Processing**: Chunking occurs in background tasks to maintain API responsiveness
 - **Memory Efficiency**: Streaming approach for handling large lesson content
 - **Exponential Backoff**: Automatic retries ensure reliable delivery of chunks
+
+## Maintenance and Monitoring
+
+### Logs
+Monitor application logs for chunking performance and errors:
+```bash
+tail -f chunker.log
+```
+
+### Common Issues
+- **Tokenization Errors**: Ensure the BAAI tokenizer is properly installed
+- **Connection Failures**: Check Laravel API endpoint availability and network connectivity
+- **Authentication Errors**: Verify that the API keys match between services
+
+### Security Considerations
+- **API Key Management**: Rotate the API key periodically for enhanced security
+- **Environment Variables**: Never hardcode the API key in the application code
+- **Key Transmission**: Always use HTTPS in production to protect API key transmission
+- **Access Logs**: Monitor access logs for unauthorized access attempts
+- **Firewall Rules**: Consider restricting access to the API endpoint by IP address
+
+### Performance Tuning
+For larger lessons, you can adjust the chunking parameters in `app.py`:
+```python
+chunker = RecursiveChunker(
+    chunk_size=400,  # Adjust based on your embedding model requirements
+    tokenizer_or_token_counter=lambda text: len(tokenizer.encode(text).ids),
+    min_characters_per_chunk=100  # Adjust for minimum chunk size
+)
+```
