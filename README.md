@@ -12,8 +12,8 @@ Chunker is a FastAPI service that processes educational lesson content by breaki
 ### Setup
 1. Clone the repository
 ```bash
-git clone https://github.com/abdushakurob/edtry-chunker chunker
-cd chunker
+git clone https://github.com/abdushakurob/edtry-chunker
+cd edtry-chunker
 ```
 
 2. Install required dependencies
